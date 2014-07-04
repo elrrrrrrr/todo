@@ -1,7 +1,4 @@
 jQuery(function($){
-
-})
-
 window.Todo = Backbone.Model.extend({
 	defaults: {
 		done:false
@@ -29,7 +26,7 @@ window.Todos = new TodoList
 
 window.TodoView = Backbone.View.extend({
 	tagName : "li",
-	template:$('#item-template').template(),
+	template:_.template($("#item-template").html()),
 	events: {
 		"change .check" : "toggleDone",
 		"dblclick .todo-content" : "edit",
@@ -38,12 +35,13 @@ window.TodoView = Backbone.View.extend({
 		"blur .todo-input" : "close"
 	},
 	initialize: function() {
-		_.bindAll(this, 'render' , 'clise' , 'remove')
+		_.bindAll(this, 'render' , 'close' , 'remove')
 		this.model.bind('change',this.render)
 		this.model.bind('destroy',this.remove)
 	},
-	reder: function() {
-		var element = _.template(this.template , this.model.toJSON());
+	render: function() {
+		var element = this.template(this.model.toJSON());
+		console.log(this.model.toJSON())
 		$(this.el).html(element)
 		return this 
 	},
@@ -79,6 +77,32 @@ window.AppView = Backbone.View.extend({
 		_.bindAll(this,'addOne','addAll','render')
 		this.input = this.$("#new-todo")
 		Todos.bind('add',this.addOne)
-		
-	}
+		Todos.bind('refresh', this.addAll)
+		Todos.fetch()
+	},
+	addOne: function(todo) {
+		debugger
+		var view = new TodoView({model: todo})
+		this.$("#todo-list").append(view.render().el);
+	},
+	addAll: function() {
+		Todos.each(this.addOne)
+	},
+	// 如果在主输入框域中敲了回车键,则创建一个新的Todo模型 
+	createOnEnter: function(e) {
+
+		if (e.keyCode != 13) return;
+	//￼￼构建T o-Do列表应用
+		var value = this.input.val(); if ( !value ) return;
+		Todos.create({content: value});
+		this.input.val(''); 
+	},
+	clearCompleted: function() {
+		_.each(Todos.done(), function(todo){ todo.destroy(); }); return false;
+		}
+	});
+	// 最后,创建一个App 
+window.App = new AppView;
+
 })
+

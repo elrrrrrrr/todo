@@ -247,5 +247,3 @@ Backbone.sync = function(method, model, options) {
 
 return Backbone.LocalStorage;
 }));
-Window size: 1280 x 774
-Viewport size: 1280 x 666
